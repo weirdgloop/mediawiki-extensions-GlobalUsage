@@ -27,7 +27,7 @@ namespace MediaWiki\Extension\GlobalUsage;
 use ApiBase;
 use ApiQueryBase;
 use MediaWiki\MediaWikiServices;
-use WikiMap;
+use MediaWiki\WikiMap\WikiMap;
 use Wikimedia\ParamValidator\ParamValidator;
 use Wikimedia\ParamValidator\TypeDef\IntegerDef;
 
@@ -133,6 +133,7 @@ class ApiQueryGlobalUsage extends ApiQueryBase {
 					'namespace',
 				],
 				ParamValidator::PARAM_ISMULTI => true,
+				ApiBase::PARAM_HELP_MSG_PER_VALUE => [],
 			],
 			'limit' => [
 				ParamValidator::PARAM_DEFAULT => 10,

@@ -13,6 +13,8 @@ require_once $path . '/maintenance/Maintenance.php';
 
 use MediaWiki\Extension\GlobalUsage\GlobalUsage;
 use MediaWiki\MediaWikiServices;
+use MediaWiki\Title\Title;
+use MediaWiki\WikiMap\WikiMap;
 
 class RefreshGlobalimagelinks extends Maintenance {
 	public function __construct() {
@@ -45,15 +47,16 @@ class RefreshGlobalimagelinks extends Maintenance {
 				$this->output( "Querying links after (page_id, il_to) = ($lastPageId, $lastIlTo)\n" );
 
 				# Query all pages and any imagelinks associated with that
-				$quotedLastIlTo = $dbr->addQuotes( $lastIlTo );
 				$res = $dbr->select(
 					[ 'page', 'imagelinks', 'image' ],
 					[
 						'page_id', 'page_namespace', 'page_title',
 						'il_to', 'img_name'
 					],
-					"(page_id = $lastPageId AND il_to > {$quotedLastIlTo})" .
-						" OR page_id > $lastPageId",
+					$dbr->buildComparison( '>', [
+						'page_id' => $lastPageId,
+						'il_to' => $lastIlTo,
+					] ),
 					__METHOD__,
 					[
 						'ORDER BY' => $dbr->implicitOrderby() ? 'page_id' : 'page_id, il_to',
@@ -118,7 +121,10 @@ class RefreshGlobalimagelinks extends Maintenance {
 				$this->output( "Querying for broken links after (page_id) = ($lastPageId)\n" );
 
 				$res = $gdbw->select( 'globalimagelinks', 'gil_page',
-					[ 'gil_wiki' => WikiMap::getCurrentWikiId(), "gil_page > $lastPageId" ],
+					[
+						'gil_wiki' => WikiMap::getCurrentWikiId(),
+						$gdbw->buildComparison( '>', [ 'gil_page' => $lastPageId ] )
+					],
 					__METHOD__,
 					[ 'ORDER BY' => 'gil_page', 'LIMIT' => $this->mBatchSize ]
 				);

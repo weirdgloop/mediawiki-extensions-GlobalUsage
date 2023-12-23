@@ -6,12 +6,25 @@
 	"descriptionmsg": "globalusage-desc",
 	"license-name": "MIT",
 	"requires": {
-		"MediaWiki": ">= 1.39.0"
+		"MediaWiki": ">= 1.41"
 	},
 	"type": "specialpage",
 	"SpecialPages": {
-		"MostGloballyLinkedFiles": "MediaWiki\\Extension\\GlobalUsage\\SpecialMostGloballyLinkedFiles",
-		"GloballyWantedFiles": "MediaWiki\\Extension\\GlobalUsage\\SpecialGloballyWantedFiles",
+		"MostGloballyLinkedFiles": {
+			"class": "MediaWiki\\Extension\\GlobalUsage\\SpecialMostGloballyLinkedFiles",
+			"services": [
+				"DBLoadBalancer",
+				"LinkBatchFactory"
+			]
+		},
+		"GloballyWantedFiles": {
+			"class": "MediaWiki\\Extension\\GlobalUsage\\SpecialGloballyWantedFiles",
+			"services": [
+				"DBLoadBalancer",
+				"LinkBatchFactory",
+				"RepoGroup"
+			]
+		},
 		"GloballyUnusedFiles": "MediaWiki\\Extension\\GlobalUsage\\SpecialGloballyUnusedFiles",
 		"GlobalUsage": "MediaWiki\\Extension\\GlobalUsage\\SpecialGlobalUsage"
 	},
@@ -34,16 +47,27 @@
 		"MediaWiki\\Extension\\GlobalUsage\\": "includes/"
 	},
 	"Hooks": {
-		"LinksUpdateComplete": "MediaWiki\\Extension\\GlobalUsage\\Hooks::onLinksUpdateComplete",
-		"ArticleDeleteComplete": "MediaWiki\\Extension\\GlobalUsage\\Hooks::onArticleDeleteComplete",
-		"FileDeleteComplete": "MediaWiki\\Extension\\GlobalUsage\\Hooks::onFileDeleteComplete",
-		"FileUndeleteComplete": "MediaWiki\\Extension\\GlobalUsage\\Hooks::onFileUndeleteComplete",
-		"UploadComplete": "MediaWiki\\Extension\\GlobalUsage\\Hooks::onUploadComplete",
-		"ImagePageAfterImageLinks": "MediaWiki\\Extension\\GlobalUsage\\GlobalUsageImagePageHooks::onImagePageAfterImageLinks",
-		"ImagePageShowTOC": "MediaWiki\\Extension\\GlobalUsage\\GlobalUsageImagePageHooks::onImagePageShowTOC",
-		"PageMoveComplete": "MediaWiki\\Extension\\GlobalUsage\\Hooks::onPageMoveComplete",
-		"LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\GlobalUsage\\Hooks::onLoadExtensionSchemaUpdates",
-		"wgQueryPages": "MediaWiki\\Extension\\GlobalUsage\\Hooks::onwgQueryPages"
+		"LinksUpdateComplete": "main",
+		"ArticleDeleteComplete": "main",
+		"FileDeleteComplete": "main",
+		"FileUndeleteComplete": "main",
+		"UploadComplete": "main",
+		"ImagePageAfterImageLinks": "imagepage",
+		"ImagePageShowTOC": "imagepage",
+		"PageMoveComplete": "main",
+		"LoadExtensionSchemaUpdates": "schema",
+		"wgQueryPages": "main"
+	},
+	"HookHandlers": {
+		"main": {
+			"class": "MediaWiki\\Extension\\GlobalUsage\\Hooks"
+		},
+		"imagepage": {
+			"class": "MediaWiki\\Extension\\GlobalUsage\\GlobalUsageImagePageHooks"
+		},
+		"schema": {
+			"class": "MediaWiki\\Extension\\GlobalUsage\\SchemaHooks"
+		}
 	},
 	"config": {
 		"GlobalUsageDatabase": {

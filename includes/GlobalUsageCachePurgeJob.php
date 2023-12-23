@@ -5,8 +5,8 @@ namespace MediaWiki\Extension\GlobalUsage;
 use HTMLCacheUpdateJob;
 use Job;
 use MediaWiki\MediaWikiServices;
-use Title;
-use WikiMap;
+use MediaWiki\Title\Title;
+use MediaWiki\WikiMap\WikiMap;
 
 /**
  * Class to insert HTMLCacheUpdate jobs on local wikis to purge all pages that use
