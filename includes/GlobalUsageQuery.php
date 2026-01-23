@@ -2,7 +2,7 @@
 
 namespace MediaWiki\Extension\GlobalUsage;
 
-use MediaWiki\MainConfigNames;
+use MediaWiki\Linker\LinksMigration;
 use MediaWiki\MediaWikiServices;
 use MediaWiki\Title\Title;
 use MediaWiki\WikiMap\WikiMap;
@@ -46,6 +46,9 @@ class GlobalUsageQuery {
 	 */
 	private $db;
 
+	// WGL - Add categorylinks migration support that's safe for MW 1.39+.
+	private bool $useLinkTarget = false;
+
 	/**
 	 * @param mixed $target Title or array of db keys of target(s).
 	 * If a title, can be a category or a file
@@ -63,6 +66,16 @@ class GlobalUsageQuery {
 			$this->target = Title::makeTitleSafe( NS_FILE, $target );
 		}
 		$this->offset = [];
+
+		// WGL - Add categorylinks migration support that's safe for MW 1.39+.
+		if ( array_key_exists( 'categorylinks', LinksMigration::$mapping ) ) {
+			$linksMigration = MediaWikiServices::getInstance()->getLinksMigration();
+			$queryInfo = $linksMigration->getQueryInfo( 'categorylinks' );
+			$this->useLinkTarget = in_array( 'linktarget', $queryInfo['tables'], true );
+		} else {
+			$this->useLinkTarget = false;
+		}
+
 	}
 
 	/**
@@ -198,11 +211,8 @@ class GlobalUsageQuery {
 				$queryBuilder->join( 'categorylinks', null, 'page_id = cl_from' );
 				$queryBuilder->join( 'page', null, 'page_title = gil_to' );
 
-				$migrationStage = MediaWikiServices::getInstance()->getMainConfig()->get(
-					MainConfigNames::CategoryLinksSchemaMigrationStage
-				);
-
-				if ( $migrationStage & SCHEMA_COMPAT_READ_OLD ) {
+				// WGL - Add categorylinks migration support that's safe for MW 1.39+.
+				if ( !$this->useLinkTarget ) {
 					$queryBuilder->where( [
 						'cl_to' => $queryIn,
 						'page_namespace' => NS_FILE,
